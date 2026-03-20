@@ -1,0 +1,15 @@
+{
+  "include": ["."],
+  "exclude": ["**/node_modules", "**/__pycache__"],
+  "typeCheckingMode": "off",
+  "reportMissingImports": false,
+  "reportMissingModuleSource": false,
+  "pythonVersion": "3.13",
+  "pythonPlatform": "Windows",
+  "extraPaths": [
+    ".",
+    "C:\\Users\\Dell\\AppData\\Roaming\\Python\\Python313\\site-packages",
+    "C:\\Users\\Dell\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages"
+  ],
+  "stubPath": "."
+}

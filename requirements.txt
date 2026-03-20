@@ -1,0 +1,12 @@
+streamlit
+pymupdf
+google-generativeai
+reportlab
+python-dotenv
+python-docx
+xhtml2pdf
+openai
+fastapi
+uvicorn
+python-multipart
+requests
