@@ -5,7 +5,7 @@ import os
 import uvicorn
 import tempfile
 import json
-from resume_parser import extract_all_text, get_ai_resume_data
+from ai_parser import extract_all_text, get_ai_resume_data
 from pdf_generator import build_classic_pdf, build_monochrome_pdf, build_sidebar_pdf
 from docx_generator import build_classic_docx, build_monochrome_docx, build_sidebar_docx
 

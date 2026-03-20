@@ -29,4 +29,4 @@ EXPOSE 8501
 # Command to run the FastAPI server
 # Render/Railway usually expect one health check port. 
 # We'll run uvicorn on 8000 as the primary entry point.
-CMD ["uvicorn", "api.py:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]

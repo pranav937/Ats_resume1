@@ -3,7 +3,7 @@ import json
 import requests
 import os
 
-API_KEY = "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"
+API_KEY = "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"
 
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
