@@ -2,7 +2,8 @@ import streamlit as st
 import requests
 import json
 import streamlit.components.v1 as components
-from html_generator import get_html_preview
+from pathlib import Path
+from ats_resume.html_generator import get_html_preview
 
 # -----------------------------
 # CONFIGURATION
@@ -10,6 +11,7 @@ from html_generator import get_html_preview
 st.set_page_config(page_title="AI Resume Builder Pro", layout="wide", page_icon="📄")
 
 API_URL = "http://localhost:8001/api"
+BASE_DIR = Path(__file__).resolve().parent
 
 st.markdown("""
 <style>
@@ -74,6 +76,14 @@ col_left, col_right = st.columns([1, 2], gap="large")
 
 with col_left:
     st.subheader("1. Setup & Upload")
+    parser_mode_ui = st.selectbox(
+        "Parsing Mode",
+        options=["Rule-based Local Parser (No API)", "Local LLM via Ollama (No API)"],
+        index=0,
+        help="Use fully offline parsing. For Ollama mode, ensure Ollama is running locally.",
+    )
+    parser_mode = "rule_based" if parser_mode_ui.startswith("Rule-based") else "ollama"
+
     uploaded_files = st.file_uploader("Upload PDFs (Resume/Certificates)", type="pdf", accept_multiple_files=True)
     user_prompt = st.text_area("2. Tailor Instructions", placeholder="e.g. Focus on Python projects for a Senior role.", height=150)
     
@@ -81,10 +91,10 @@ with col_left:
         if not uploaded_files:
             st.error("Please upload PDFs first.")
         else:
-            with st.spinner("AI Analysis in progress via API..."):
+            with st.spinner("Offline parsing in progress..."):
                 try:
                     files_to_send = [("files", (f.name, f.getvalue(), "application/pdf")) for f in uploaded_files]
-                    data = {"user_instruction": user_prompt}
+                    data = {"user_instruction": user_prompt, "parse_mode": parser_mode}
                     
                     response = requests.post(f"{API_URL}/extract", files=files_to_send, data=data)
                     
@@ -93,7 +103,17 @@ with col_left:
                         st.session_state.selected_template = "classic" # Default selection
                         st.success("Analysis Complete!")
                     else:
-                        st.error(f"API Error: {response.text}")
+                        try:
+                            err_payload = response.json()
+                            detail = err_payload.get("detail", response.text)
+                        except Exception:
+                            detail = response.text
+
+                        if response.status_code == 503 and parser_mode == "ollama":
+                            st.error("Ollama is not running locally.")
+                            st.info("Start Ollama and pull a model (example: `ollama run llama3.1:8b`), then retry.")
+                        else:
+                            st.error(f"API Error ({response.status_code}): {detail}")
                 except requests.exceptions.ConnectionError:
                     st.error("Failed to connect to API. Is the FastAPI server running on port 8001?")
 
@@ -111,11 +131,10 @@ with col_right:
     st.subheader("3. Choose Your Template")
     
     # 3 Templates Grid
-    import os
     templates = [
-        {"id": "classic", "name": "Classic Single Column", "desc": "Clean, traditional, and ATS-friendly.", "img": "templates/img1.jpg"},
-        {"id": "monochrome", "name": "Professional Monochrome", "desc": "Modern borders, sharp fonts, high contrast.", "img": "templates/img2.jpg"},
-        {"id": "sidebar", "name": "Two Column Sidebar", "desc": "Creative layout with a colored left sidebar.", "img": "templates/img3.jpg"}
+        {"id": "classic", "name": "Classic Single Column", "desc": "Clean, traditional, and ATS-friendly.", "img": str(BASE_DIR / "assets" / "templates" / "img1.jpg")},
+        {"id": "monochrome", "name": "Professional Monochrome", "desc": "Modern borders, sharp fonts, high contrast.", "img": str(BASE_DIR / "assets" / "templates" / "img2.jpg")},
+        {"id": "sidebar", "name": "Two Column Sidebar", "desc": "Creative layout with a colored left sidebar.", "img": str(BASE_DIR / "assets" / "templates" / "img3.jpg")}
     ]
     
     t_cols = st.columns(3)
@@ -125,7 +144,7 @@ with col_right:
             card_class = "template-card selected-card" if is_selected else "template-card"
             
             st.markdown(f'<div class="{card_class}">', unsafe_allow_html=True)
-            if 'img' in t and os.path.exists(t['img']):
+            if 'img' in t and Path(t['img']).exists():
                 st.image(t['img'], use_container_width=True)
             else:
                 st.info("No preview image")

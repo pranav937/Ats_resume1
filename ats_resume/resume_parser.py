@@ -3,18 +3,29 @@ from openai import OpenAI
 import json
 import re
 import os
+from pathlib import Path
+from dotenv import load_dotenv
 
-API_KEY = os.environ.get("OPENROUTER_API_KEY", "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")
+BASE_DIR = Path(__file__).resolve().parents[1]
+ENV_FILE = BASE_DIR / ".env"
 
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=API_KEY,
-)
+
+def _get_openrouter_api_key() -> str:
+  load_dotenv(dotenv_path=ENV_FILE, override=True)
+  return os.environ.get("OPENROUTER_API_KEY", "").strip()
 
 
 
 def get_ai_resume_data(user_instruction=None):
     """Generate professional resume data using AI based on user instructions."""
+  api_key = _get_openrouter_api_key()
+  if not api_key:
+        return {"error": "Missing OPENROUTER_API_KEY environment variable."}
+
+  client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=api_key,
+  )
     prompt = f"""
 You are an expert ATS Resume Builder.
 Generate a complete, professional, and realistic resume in JSON format based on the user's instructions.

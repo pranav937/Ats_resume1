@@ -1,7 +1,14 @@
-import os
-import json
-from pdf_generator import build_classic_pdf, build_monochrome_pdf, build_sidebar_pdf
-from docx_generator import build_classic_docx, build_monochrome_docx, build_sidebar_docx
+from pathlib import Path
+import sys
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+from ats_resume.pdf_generator import build_classic_pdf, build_monochrome_pdf, build_sidebar_pdf
+from ats_resume.docx_generator import build_classic_docx, build_monochrome_docx, build_sidebar_docx
+
+OUTPUT_DIR = ROOT_DIR / "outputs" / "samples"
 
 sample_data = {
     "name": "John Doe",
@@ -45,6 +52,7 @@ sample_data = {
 
 def test_pdf_generators():
     print("Testing PDF Generators...")
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     builders = [
         ("classic", build_classic_pdf),
         ("monochrome", build_monochrome_pdf),
@@ -53,7 +61,7 @@ def test_pdf_generators():
     for name, builder in builders:
         try:
             buffer = builder(sample_data)
-            with open(f"test_{name}.pdf", "wb") as f:
+            with open(OUTPUT_DIR / f"test_{name}.pdf", "wb") as f:
                 f.write(buffer.getvalue())
             print(f"  [OK] {name} PDF generated.")
         except Exception as e:
@@ -61,6 +69,7 @@ def test_pdf_generators():
 
 def test_docx_generators():
     print("Testing DOCX Generators...")
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     builders = [
         ("classic", build_classic_docx),
         ("monochrome", build_monochrome_docx),
@@ -69,7 +78,7 @@ def test_docx_generators():
     for name, builder in builders:
         try:
             buffer = builder(sample_data)
-            with open(f"test_{name}.docx", "wb") as f:
+            with open(OUTPUT_DIR / f"test_{name}.docx", "wb") as f:
                 f.write(buffer.getvalue())
             print(f"  [OK] {name} DOCX generated.")
         except Exception as e:
@@ -78,4 +87,4 @@ def test_docx_generators():
 if __name__ == "__main__":
     test_pdf_generators()
     test_docx_generators()
-    print("Verification complete. Check test_*.pdf and test_*.docx files.")
+    print(f"Verification complete. Check files in {OUTPUT_DIR}")

@@ -1,11 +1,11 @@
 streamlit
 pymupdf
-google-generativeai
+pillow
+pytesseract
 reportlab
 python-dotenv
 python-docx
 xhtml2pdf
-openai
 fastapi
 uvicorn
 python-multipart

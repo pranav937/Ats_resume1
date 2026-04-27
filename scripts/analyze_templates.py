@@ -2,19 +2,24 @@ import base64
 import json
 import requests
 import os
+from pathlib import Path
 
-API_KEY = "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"
+API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+BASE_DIR = Path(__file__).resolve().parents[1]
 
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
 
-images = ["celestial.png", "astral.png", "galaxy.png"]
+images = ["img1.jpg", "img2.jpg", "img3.jpg"]
 results = {}
 
+if not API_KEY:
+    raise RuntimeError("Missing OPENROUTER_API_KEY environment variable.")
+
 for img in images:
-    path = os.path.join("templates", img)
-    if not os.path.exists(path):
+    path = BASE_DIR / "assets" / "templates" / img
+    if not path.exists():
         continue
     
     base64_image = encode_image(path)

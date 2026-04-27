@@ -5,9 +5,9 @@ import os
 import uvicorn
 import tempfile
 import json
-from ai_parser import extract_all_text, get_ai_resume_data
-from pdf_generator import build_classic_pdf, build_monochrome_pdf, build_sidebar_pdf
-from docx_generator import build_classic_docx, build_monochrome_docx, build_sidebar_docx
+from ats_resume.ai_parser import extract_all_text, get_ai_resume_data
+from ats_resume.pdf_generator import build_classic_pdf, build_monochrome_pdf, build_sidebar_pdf
+from ats_resume.docx_generator import build_classic_docx, build_monochrome_docx, build_sidebar_docx
 
 app = FastAPI(title="Resume Builder API")
 
@@ -27,7 +27,8 @@ def read_root():
 @app.post("/api/extract")
 async def extract_resume(
     files: List[UploadFile] = File(...),
-    user_instruction: str = Form(None)
+    user_instruction: str = Form(None),
+    parse_mode: str = Form("rule_based")
 ):
     try:
         temp_files = []
@@ -39,13 +40,15 @@ async def extract_resume(
         file_objs = [io.BytesIO(f) for f in temp_files]
         
         raw_text = extract_all_text(file_objs)
-        data = get_ai_resume_data(raw_text, user_instruction)
+        data = get_ai_resume_data(user_instruction, raw_text, parse_mode=parse_mode)
         
         if "error" in data:
-            raise HTTPException(status_code=500, detail=data["error"])
+            raise HTTPException(status_code=data.get("status_code", 500), detail=data["error"])
             
         return data
-        
+
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

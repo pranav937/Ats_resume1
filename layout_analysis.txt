@@ -1,9 +1,0 @@
-=== celestial.png ===
-'choices'
-
-=== astral.png ===
-'choices'
-
-=== galaxy.png ===
-'choices'
-
